@@ -486,11 +486,23 @@ The skill stays self-contained.
 Runtime cross-skill imports are prohibited. A skill copied out on its own must
 still work.
 
-DRY happens at authoring time. The source keeps one copy, and the build vendors
-it into each skill that declares it. `02-architecture.md` describes the
+DRY happens at authoring time. The source keeps one copy in `lib/`, and the build
+vendors it into each skill that declares it. `02-architecture.md` describes the
 materialization step.
 
+A scope B library is private to its repository. It carries domain knowledge that
+the skills in that repository share, and it never reaches a skill somebody else
+owns. In the Skillforge repository this is where a primitive shared by the `sf-`
+meta-skills lives.
+
 ### Scope C, the framework
+
+`skillforge_std` is the standard library of a skill script. It holds the
+primitives any script needs to start, inspect its surroundings, and report a
+result. It knows nothing about what the script does.
+
+It is the one library that leaves its repository. The build vendors it into any
+skill that opts in, in any repository, so a change to it reaches every user.
 
 The shared source libraries split by language and stay idiomatic in each. Do not
 build a cross-language abstraction.
@@ -501,9 +513,9 @@ The build copies the whole package into `scripts/`, under its own name.
 source                              materialized skill
 ──────                              ──────────────────
 
-lib/python/skillforge_runtime/      scripts/
+lib/python/skillforge_std/          scripts/
 ├── __init__.py                     ├── inspect.py
-├── checks.py                       └── skillforge_runtime/
+├── checks.py                       └── skillforge_std/
 ├── diagnostics.py                      ├── __init__.py
 ├── paths.py                            ├── checks.py
 └── results.py                          ├── diagnostics.py
@@ -517,7 +529,7 @@ lib/bash/                               ├── results.py
 The import is the same in the source repository and in the materialized skill.
 
 ```python
-from skillforge_runtime.checks import require_command, require_env
+from skillforge_std.checks import require_command, require_env
 
 def main():
     require_command("git")
@@ -526,12 +538,12 @@ def main():
 ```
 
 ```bash
-source "${SCRIPT_DIR}/skillforge_runtime/bash/checks.bash"
+source "${SCRIPT_DIR}/skillforge_std/bash/checks.bash"
 ```
 
 This works with no build-time rewriting and no path manipulation. Python puts
 the directory of the executed script first on the module search path, so
-`uv run scripts/inspect.py` makes `scripts/skillforge_runtime/` importable by
+`uv run scripts/inspect.py` makes `scripts/skillforge_std/` importable by
 name. A script MUST NOT write to `sys.path`, and the build MUST NOT rewrite an
 import statement.
 
@@ -541,7 +553,7 @@ A skill opts in once, and the build copies the complete package.
 
 ```toml
 [runtime.python]
-vendor-skillforge-runtime = true
+vendor-skillforge-std = true
 ```
 
 Skillforge does not resolve which modules a script imports and copy only those.
@@ -574,7 +586,21 @@ create_release()    analyze_skill_quality()
 fix_python_package()  generate_github_issue()
 ```
 
-Those are domain behavior and belong to one skill.
+Those are domain behavior. They belong to one skill, or to a scope B library
+when several skills in the same repository share them.
+
+One question sorts any candidate. Does a skill that never heard of Skillforge
+want this function?
+
+| Answer | Home | Reaches |
+|---|---|---|
+| Yes | `skillforge_std`, scope C. | Any skill that opts in, anywhere. |
+| Only skills about skills | A scope B library in `lib/`. | The `sf-` skills only. |
+| Only this skill | The skill's own `scripts/_lib/`, scope A. | Nothing else. |
+
+`require_command("git")` answers yes, because a deploy skill and a weather skill
+both want it. A function that counts the tokens in a `description` answers no,
+because it encodes the house profile in `03-skill-authoring-standard.md`.
 
 Keep the libraries small. A large `skillforge_common` becomes a framework inside
 the framework.
@@ -670,7 +696,7 @@ commands = ["git", "uv"]
 
 [runtime.python]
 requires = ">=3.11"
-vendor-skillforge-runtime = true
+vendor-skillforge-std = true
 ```
 
 `skillforge check`, `skillforge build`, and `skillforge doctor` consume that

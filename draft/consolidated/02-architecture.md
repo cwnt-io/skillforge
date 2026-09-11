@@ -45,8 +45,8 @@ The development repository carries more than a distributable skill carries.
 ```text
 skillforge/
 ├── crates/               # the Rust CLI
-├── lib/
-│   ├── python/           # shared source-level primitives
+├── lib/                  # shared source, vendored at build time
+│   ├── python/           # skillforge_std, plus sf- skill primitives
 │   └── bash/
 ├── skills/
 │   └── <skill-name>/
@@ -73,7 +73,7 @@ crate.
 
 ```text
 my-skills/
-├── lib/                   # optional, shared source primitives
+├── lib/                   # optional, primitives this repository's skills share
 ├── skills/
 │   └── deploy-api/
 │       ├── SKILL.md
@@ -100,19 +100,24 @@ The repository source and the distributed skill are not the same tree.
 source                              distribution
 ──────                              ────────────
 
-lib/python/skillforge_runtime/      skills/create/
+lib/python/skillforge_std/          skills/create/
         │                           └── scripts/
         ├────────────┐                  ├── inspect.py
-        ▼            ▼                  └── skillforge_runtime/
+        ▼            ▼                  └── skillforge_std/
 skills/create   skills/review               ├── checks.py
                                             └── ...
 ```
 
 Shared code stays DRY in source. A skill opts in through `skillforge.toml`, and
-the build copies the whole `skillforge_runtime` package into that skill's
+the build copies the whole `skillforge_std` package into that skill's
 `scripts/`. The import reads the same in both trees, and nothing manipulates
 `sys.path`. `04-script-runtime-profile.md` defines the package and the reason
 the build copies all of it rather than a computed subset.
+
+`skillforge_std` is the standard library of a skill script, not part of the CLI.
+The Rust binary runs at build time on the author's machine. The library runs
+later, on the user's host, inside a skill's own `scripts/`, where no CLI is
+present. A vendored skill keeps working after the user removes Skillforge.
 
 The result is an ordinary Agent Skill with no path outside its own directory.
 
