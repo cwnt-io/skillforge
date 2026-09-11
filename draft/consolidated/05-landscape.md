@@ -67,8 +67,8 @@ resources, Markdown correctness, extraneous files, content density, and
 contamination. It treats a malformed Markdown fence as an error, because a bad
 fence changes how an agent reads everything after it.
 
-The lesson for Skillforge: keep spec conformance, house policy, and behavioral
-quality in three separate report classes.
+The lesson for Skillforge: keep spec conformance, house policy, and host load in
+three separate report classes.
 
 ## agent-skills-lint
 
@@ -133,7 +133,7 @@ on it. That is the combination Skillforge builds around.
 | Authoring methodology | light | strongest | medium | strong | strong |
 | Meta-skills | none | strong | none | strongest | strong |
 | Deterministic validation | medium | medium | strongest | medium | strong |
-| Behavioral evaluations | none | strongest | scoring only | strong | strong |
+| Behavioral evaluations | none | strongest | scoring only | strong | none, by choice |
 | Native tooling for skill development | light | light | external | some | core feature |
 | Rust | yes | no | no | no | yes |
 
@@ -142,16 +142,16 @@ on it. That is the combination Skillforge builds around.
 | From | Take |
 |---|---|
 | cortesi/skills | Source directories, target rendering, dry-run and diff UX, Rust implementation. |
-| Anthropic skill-creator | The create, evaluate, improve, benchmark lifecycle and progressive disclosure. |
+| Anthropic skill-creator | The create and improve lifecycle, and progressive disclosure. |
 | skill-tools, skill-validator | Strict deterministic lint layers and quality gates. |
 | agent-skills-lint | JSON mode, stable exit codes, stream discipline, no prompts by default. |
-| Superpowers | Project-native meta-skills and behavioral testing of skills. |
+| Superpowers | Project-native meta-skills. |
 | gh skill, Vercel skills | The lesson to not rebuild generic distribution. |
 
 ## Positioning statement
 
-Skillforge is an opinionated engineering framework for building, testing,
-validating, and projecting portable Agent Skills. Agent-facing skills encode
+Skillforge is an opinionated engineering framework for building, validating,
+and projecting portable Agent Skills. Agent-facing skills encode
 judgment and workflow. Deterministic scripts own repeatable mechanics. One
 repository is the source of truth, and host-specific skill trees are generated
 projections.

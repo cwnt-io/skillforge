@@ -12,14 +12,14 @@ of these projects move fast, so re-read a source before you treat it as current.
 
 | Rank | Source class |
 |---|---|
-| 1 | The project's own evaluation suite. |
+| 1 | Behavior observed in this project's own use. |
 | 2 | The Agent Skills specification. |
 | 3 | The Agent Skills authoring and evaluation guides. |
 | 4 | Vendor skill creators from Anthropic, OpenAI, and Google. |
 | 5 | Community projects such as Superpowers. |
 
-The first row outranks the rest inside this project. Evidence from a local
-evaluation run beats a published recommendation.
+The first row outranks the rest inside this project. What a skill actually does
+on real work beats a published recommendation.
 
 ## The base format
 
@@ -107,6 +107,88 @@ Distribution, which Skillforge does not rebuild:
   [OpenSkills](https://github.com/numman-ali/openskills),
   [skm](https://github.com/reorx/skm),
   [skills-man](https://github.com/nomyfan/skills-man).
+
+## Working exemplars
+
+Projects that implement a section of the standard rather than describe it.
+
+- [gubasso/release-kit](https://github.com/gubasso/release-kit): owns one
+  marker-delimited region in a target repository's `AGENTS.md`, preserves the
+  host text outside it, and coexists with a spec-driven-docs region in its own
+  repository.
+- [gubasso/spec-driven-docs](https://github.com/gubasso/spec-driven-docs):
+  validates marker count and order, refuses a symlinked `AGENTS.md`, records the
+  installed region's digest, and stops an upgrade before it overwrites a locally
+  edited managed block.
+
+- [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd): one skill with
+  host adapters for nine runtimes. The load class in `02-architecture.md` comes
+  from its
+  [.github/workflows/plugin-load-check.yml](https://github.com/ayghri/i-have-adhd/blob/main/.github/workflows/plugin-load-check.yml),
+  which installs the plugin into a scratch configuration directory and asserts
+  the host's own report.
+  [pi-load-check.yml](https://github.com/ayghri/i-have-adhd/blob/main/.github/workflows/pi-load-check.yml)
+  is the same idea for a second host, which is why the load class runs one job
+  per host.
+
+Five more files in that repository raised the questions OQ-7 to OQ-11 in
+`08-open-questions.md`.
+
+- [.github/workflows/cursor-skill-sync.yml](https://github.com/ayghri/i-have-adhd/blob/main/.github/workflows/cursor-skill-sync.yml):
+  one `cmp` between the canonical skill and its projected copy, with the repair
+  command in the failure message. The header comment records why the copy is a
+  real file and not a symlink.
+- [CONTRIBUTING.md](https://github.com/ayghri/i-have-adhd/blob/main/CONTRIBUTING.md):
+  the "Safety and side effects" section states what a skill must never instruct
+  an agent to do. The "Verification" section states that a check nobody ran is
+  reported as not run.
+- [AGENTS.md](https://github.com/ayghri/i-have-adhd/blob/main/AGENTS.md): a
+  repository map for an agent, with a reading order, an entry point per runtime,
+  source-of-truth rules, and the exact verification commands.
+- [tests/test_install_docs.py](https://github.com/ayghri/i-have-adhd/blob/main/tests/test_install_docs.py):
+  a test that asserts a documented path is present and that an abandoned path is
+  absent by name.
+
+The same repository carries a full evaluation harness under
+[evals/](https://github.com/ayghri/i-have-adhd/tree/main/evals): a weighted
+rubric, blind judging, and a published run that fails its own release gate.
+Skillforge does not adopt it. `07-provenance.md` records why. Read it as
+evidence of what a harness costs, not as a pattern to copy.
+
+## Skill safety
+
+The basis for section 15 of `03-skill-authoring-standard.md`. Read these as
+threat models rather than as authoring guides. Skillforge takes the authoring
+half and leaves host enforcement to the host.
+
+- [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/):
+  ten risk classes for the skill format itself. AST03 over-privileged skills and
+  [AST05 untrusted external instructions](https://owasp.org/www-project-agentic-skills-top-10/ast05.html)
+  are the two the authoring standard acts on.
+- [OWASP Top 10 for Agentic Applications](https://genai.owasp.org/2025/12/09/owasp-top-10-for-agentic-applications-the-benchmark-for-agentic-security-in-the-age-of-autonomous-ai/):
+  the wider list. ASI01 goal hijack and ASI02 tool misuse are the entries a skill
+  can cause. The Least Agency framing is the source of the narrowest-capability
+  rule.
+- [Agent Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
+  and [Skills for enterprise](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/enterprise):
+  the vendor position. Use skills from trusted sources, audit every bundled file,
+  and look for an instruction that reads sensitive data and then writes, sends,
+  or encodes it.
+- [Snyk, from SKILL.md to shell access](https://snyk.io/articles/skill-md-shell-access/):
+  the concrete attack shapes. Credential harvesting, a pipe from a network fetch
+  into a shell, and a write to an agent memory file that outlives the task.
+- [CSA, SKILL.md agent context poisoning](https://labs.cloudsecurityalliance.org/research/csa-research-note-skill-md-agent-context-poisoning-20260506/):
+  the source of the visible-text rule. Instructions hidden in HTML comments and
+  in invisible Unicode reach the agent and not the reviewer.
+- [Datadog, malicious skills in coding agents](https://securitylabs.datadoghq.com/articles/malicious-skills-supply-chain-risks-in-coding-agents-with-dynamic-context/)
+  and [Red Hat, Agent Skills threats and controls](https://developers.redhat.com/articles/2026/03/10/agent-skills-explore-security-threats-and-controls):
+  the supply-chain view, and the reason a skill pins every version it names.
+- [Codex CLI deny-read policies](https://codex.danielvaughan.com/2026/04/25/codex-cli-filesystem-security-deny-read-policies-credential-protection/):
+  a host-side deny list, and the gap it leaves. A file deny rule does not cover a
+  credential that lives in an environment variable.
+- [Auth0, do not give agents secrets](https://auth0.com/blog/want-ai-agents-that-don-t-spill-secrets-don-t-give-them-secrets/):
+  the source of the rule that a credential never enters the agent's context. The
+  skill passes the secret to a tool and never reads the value.
 
 ## Controlled English
 

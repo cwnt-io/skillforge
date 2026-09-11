@@ -59,22 +59,26 @@ drift ambiguity from the design.
 
 ### 4. Evidence decides, not taste.
 
-When deciding whether to add, remove, or change an instruction in a skill, test
-its effect. Run the same task with the same agent, change only that instruction,
-and record the result.
+When deciding whether to add, remove, or change an instruction in a skill, look
+at what the agent does. Run the same task with the same agent, change only that
+instruction, and see what changed.
 
-Keep an instruction if it improves task success, even if it sounds awkward.
+Keep an instruction if it improves the task result, even if it sounds awkward.
 Remove it if it sounds good but does not help.
 
 When there is no evidence, choose the simpler option. Call it a hypothesis, not
-a standard, and test it next.
+a standard, and settle it the next time the skill runs on real work.
 
 Evidence is local. An instruction that works for one agent, model, or
-environment may not work everywhere. If the environment changes, test it again.
+environment can fail elsewhere. If the environment changes, look again.
 
-This also makes skills easier to prune. Remove an instruction, rerun the
-evaluation, and keep it out if the result does not get worse. This is
-subtraction testing, defined in `03-skill-authoring-standard.md`.
+Skillforge specifies no evaluation harness. Evidence comes from daily use, not
+from a graded suite built in advance. A framework that demands a test rig before
+the first skill exists buys a number nobody trusts with work nobody does.
+
+This still makes skills easier to prune. Remove an instruction, run the task,
+and keep it out if nothing gets worse. This is subtraction testing, defined in
+`03-skill-authoring-standard.md`.
 
 ## The governing laws
 
@@ -96,7 +100,7 @@ These sentences resolve most design arguments.
 Skillforge builds its own skills with its own public tool.
 
 Those skills are the meta-skills: agent-facing skills that create, review,
-improve, and test other skills, and that prepare a repository to build them.
+improve, and check other skills, and that prepare a repository to build them.
 They are the project's main product alongside the CLI, and they are also its
 main test of the CLI.
 
@@ -133,6 +137,6 @@ depend on a tool because the framework requires it.
 
 ## Naming
 
-The method carries its own name: Eval-Driven Skill Engineering. Its six verbs
-are Route, Guide, Execute, Validate, Measure, and Prune. `03-skill-authoring-standard.md`
-defines them.
+The method carries its own name: Contract-Driven Skill Engineering. Its five
+verbs are Route, Guide, Execute, Validate, and Prune.
+`03-skill-authoring-standard.md` defines them.

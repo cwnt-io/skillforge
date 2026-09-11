@@ -709,9 +709,18 @@ Every non-trivial deterministic helper is testable without an agent. That is one
 of the main wins of this architecture.
 
 ```text
-SKILL.md   → behavioral and trigger evaluations
-scripts/   → conventional deterministic tests
+SKILL.md behavior → read it, and watch the agent use it
+SKILL.md claims   → skillforge check inspects, the skill's claim tests assert
+scripts/          → conventional deterministic tests
 ```
+
+The first line is not automatable, and `03-skill-authoring-standard.md` section
+13 covers it. The other two are. Section 12 of that document defines which claim
+the framework decides and which claim the skill decides.
+
+This section covers the tests a skill owns. Skillforge inspects a skill and
+never tests one, and the CLI carries no verb that runs the tests below.
+`02-architecture.md` fixes the four verbs.
 
 | Language | Tests | Static analysis |
 |---|---|---|
@@ -742,6 +751,35 @@ tests/
 }
 ```
 
+### Claim tests
+
+A skill that states an external path or an external command carries one test
+file that asserts it. The test reads the shipped text and nothing else, so it
+needs no agent, no host, and no network.
+
+```python
+from pathlib import Path
+
+SKILL = Path(__file__).parent.parent
+
+HOST_SKILL_DIR = "~/.config/zed/skills"
+INSTALL_COMMAND = "zed --install-skill"
+
+
+def test_the_documented_host_directory_is_current():
+    assert HOST_SKILL_DIR in (SKILL / "SKILL.md").read_text()
+
+
+def test_the_documented_install_command_is_current():
+    assert INSTALL_COMMAND in (SKILL / "SKILL.md").read_text()
+```
+
+The test carries the positive assertion, because only the skill knows the
+current value. `skillforge check` carries the negative assertion through
+`retired.toml`, because a banned string needs no domain knowledge. Do not
+duplicate the negative assertion in the test, because two copies of one rule
+drift apart.
+
 ## 11. Hook layering
 
 Do not run the complete test suite on every commit. Developer experience
@@ -749,9 +787,13 @@ degrades, and the hooks get bypassed.
 
 | Stage | Scope |
 |---|---|
-| pre-commit | Fast static checks: whitespace, EOF, YAML and TOML parsing, large files, ruff, shellcheck, cargo fmt, cargo clippy. |
-| pre-push | Relevant tests for the changed area. |
-| CI | The complete suite. |
+| pre-commit | Fast static checks: whitespace, EOF, YAML and TOML parsing, large files, ruff, shellcheck, cargo fmt, cargo clippy. `skillforge check --strict`, which carries the claim checks. |
+| pre-push | Relevant tests for the changed area, the claim tests included. |
+| CI | The complete suite, and the `sf-review` agent pass. |
+
+A deterministic check blocks a commit. The agent pass never blocks one, because
+it does not repeat. `03-skill-authoring-standard.md` section 12 states the
+reason and the division of work.
 
 ## 12. Reported surface
 
@@ -763,6 +805,7 @@ Skill
   ✓ instruction policy
   ✓ progressive disclosure
   ✓ deterministic boundary
+  ✓ documentation claims
 
 Deterministic surface
   ✓ Bash runtime
