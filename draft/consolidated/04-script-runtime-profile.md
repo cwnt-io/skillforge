@@ -141,10 +141,14 @@ belong inside the skill at all?
 
 Skillforge defines three lifecycle semantics and no more.
 
+The complete name for outcome checking during actual skill use is **Skill
+Runtime Validation**. Inside a skill, its conventional phase and script use the
+short name `validate`.
+
 | Phase | Question | When it runs |
 |---|---|---|
 | `preflight` | Can this workflow safely run? | Before the workflow. |
-| `verify` | Did it produce a valid result? | After the workflow. |
+| `validate` | Did it produce a valid result? | After the workflow. |
 | `postflight` | What must be restored and recorded before the skill ends? | Always, on success and on failure. |
 
 Generic names such as `before`, `after`, `setup`, and `teardown` are rejected.
@@ -156,7 +160,7 @@ preflight
     ↓
 main orchestration: agent reasoning plus deterministic scripts
     ↓
-verify
+validate
     ↓
 postflight
 ```
@@ -165,8 +169,8 @@ postflight
 tail of the workflow. A temporary worktree still needs removal after a failed
 operation, and a failed run still needs its diagnostics written down.
 
-`verify` decides success. `postflight` never does. A skill must not report
-success because `postflight` exited 0, and must not withhold a verified success
+`validate` decides success. `postflight` never does. A skill must not report
+success because `postflight` exited 0, and must not withhold a validated success
 because `postflight` reported leftover state. `postflight` reports what it could
 not restore, and the agent surfaces that alongside the real outcome.
 
@@ -197,7 +201,7 @@ All three phases are absent by default. Each one appears in a skill because that
 skill has a reason for it.
 
 A skill with no environmental prerequisite carries no `preflight`. A skill whose
-result is not machine-checkable carries no `verify`. A skill that creates no
+result is not machine-checkable carries no `validate`. A skill that creates no
 transient state and produces no summary carries no `postflight`. A skill can
 carry one phase and not the others.
 
@@ -206,7 +210,7 @@ Do not generate empty ceremony.
 ```text
 scripts/
 ├── preflight.py    ← only because this skill needs gh authentication
-└── verify.py       ← only because correctness is machine-checkable
+└── validate.py     ← only because correctness is machine-checkable
 ```
 
 ### Phases couple a skill to nothing
@@ -222,7 +226,7 @@ them.
 | The agent reads the result. | The exit code and the JSON go to the agent, not to a framework. |
 | `skillforge check` runs at authoring time. | Its advice never reaches an installed skill. |
 
-A materialized skill runs on any agent that can execute a script. Copy it to a
+A Skill Package runs on any agent that can execute a script. Copy it to a
 machine with no Skillforge installed and the phases still work.
 
 The contract exists so that a reader of any Skillforge skill meets the same
@@ -250,18 +254,18 @@ Do not proceed if preflight fails.
 The agent then does not reason about environmental suitability. The script
 decides.
 
-### Verify is authoritative
+### Skill Runtime Validation is authoritative
 
-Verify answers whether the deterministic outcome satisfies the expected
+Validate answers whether the deterministic outcome satisfies the expected
 invariants: files exist, the repository is clean, tests pass, output conforms to
 a schema, a checksum matches.
 
 ```markdown
 After applying the changes:
 
-    uv run scripts/verify.py
+    uv run scripts/validate.py
 
-Do not report success unless verification passes.
+Do not report success unless validation passes.
 ```
 
 This removes one classic agent failure: "I changed it, therefore it is done."
@@ -318,7 +322,7 @@ decision.
 | Phase | Exit 1 means | The agent then |
 |---|---|---|
 | `preflight` | A requirement is not satisfied. | Stops before the workflow. |
-| `verify` | The result is not valid. | Does not report success. |
+| `validate` | The result is not valid. | Does not report success. |
 | `postflight` | Some state could not be restored. | Reports the leftover state with the outcome. |
 
 These codes are reserved for lifecycle scripts only. An ordinary utility script
@@ -510,7 +514,7 @@ build a cross-language abstraction.
 The build copies the whole package into `scripts/`, under its own name.
 
 ```text
-source                              materialized skill
+source                              Skill Package
 ──────                              ──────────────────
 
 lib/python/skillforge_std/          scripts/
@@ -526,7 +530,7 @@ lib/bash/                               ├── results.py
                                             └── diagnostics.bash
 ```
 
-The import is the same in the source repository and in the materialized skill.
+The import is the same in the Skill Repository and in the Skill Package.
 
 ```python
 from skillforge_std.checks import require_command, require_env
@@ -611,7 +615,7 @@ Some reuse is code. Some reuse is an authoring convention. The stream discipline
 and the path rules above are policy, enforced by `skillforge check`. Do not
 solve a convention by adding runtime code.
 
-## 7. Environment setup is verification, not installation
+## 7. Environment setup checks prerequisites, never installs them
 
 A skill never mutates the base system because a helper needs something.
 
@@ -685,7 +689,7 @@ compatibility: Requires Python 3.11+, uv, and an authenticated GitHub CLI.
 ```
 
 Skillforge source can carry richer build metadata in `skillforge.toml`. That
-file is source only. It never lands in the materialized skill.
+file is source only. It never lands in the Skill Package.
 
 ```toml
 [package]
@@ -720,7 +724,7 @@ the framework decides and which claim the skill decides.
 
 This section covers the tests a skill owns. Skillforge inspects a skill and
 never tests one, and the CLI carries no verb that runs the tests below.
-`02-architecture.md` fixes the four verbs.
+`02-architecture.md` fixes the assurance operations.
 
 | Language | Tests | Static analysis |
 |---|---|---|
@@ -815,6 +819,6 @@ Deterministic surface
   ✓ Ruff
   ✓ tests
   ✓ preflight contract
-  ✓ verify contract
+  ✓ validate contract
   ✓ postflight contract
 ```

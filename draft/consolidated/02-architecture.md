@@ -58,7 +58,7 @@ skillforge/
 └── docs/
 ```
 
-`evals/` and `tests/` belong to the development repository. A materialized skill
+`evals/` and `tests/` belong to the development repository. A Skill Package
 MUST NOT carry either one.
 
 `evals/` is optional and carries no required shape. Skillforge defines no
@@ -116,9 +116,10 @@ outside this region:
 
 Skillforge owns exactly the two markers and the lines between them. The block
 contains only stable Skillforge routing, source boundaries, precedence, and
-verification commands. A repository-specific introduction, reading order, area
-map, and unrelated commands stay outside the markers under project ownership.
-Another tool may own a differently named region in the same document.
+release-assurance commands. A repository-specific introduction, reading order,
+area map, and unrelated commands stay outside the markers under project
+ownership. Another tool may own a differently named region in the same
+document.
 
 `sf-setup` creates `AGENTS.md` with the block when the file is absent. When the
 file exists without the block, setup appends it. When one valid block exists,
@@ -181,7 +182,7 @@ Materialized by default, when present:
 └── NOTICE*
 ```
 
-Source only, and never materialized:
+Source only, and never included in a Skill Package:
 
 ```text
 skillforge.toml   retired.toml      tests/
@@ -210,7 +211,7 @@ ships before anything is published.
 `skillforge pack` reads `dist/<skill>` and never the source tree. Packing from
 source is how a development file reaches a user.
 
-The build inspects the fresh materialized tree, and the pipeline then calls the
+Skillforge Build checks the fresh Skill Package, and the pipeline then calls the
 skill's own test runner against it. A skill that passes its own tests in the
 source repository and fails in `dist/` has a vendoring defect, and only an
 isolated run finds it. The two acts stay separate, because inspection belongs to
@@ -240,7 +241,7 @@ Projection is one-way and idempotent.
                   build
                      │
                      ▼
-            dist/<skill>/               materialized
+            dist/<skill>/               Skill Package
                      │
           ┌──────────┴──────────┐
           ▼                     ▼
@@ -366,7 +367,6 @@ In core:
 ```text
 skillforge new
 skillforge check
-skillforge validate
 skillforge build
 skillforge project
 skillforge install
@@ -387,20 +387,67 @@ run a skill's own test suite
 
 Those belong to the skill that needs them.
 
-### Four verbs, four domains
+### Assurance domains and reserved names
 
-Four acts touch a skill or the tool that builds it. Each one has its own verb,
-and no verb crosses a domain.
+Four subjects participate in release assurance. Name the subject whenever a
+broad word such as "test," "validation," or "release" would leave it
+ambiguous.
 
-| Verb | Subject | Actor | Runs when |
-|---|---|---|---|
-| Inspect | A skill's source text | `skillforge check` | Creation, commit, build, projection |
-| Test | A skill's scripts and claims | The skill's own runner | The `skill-tests` pipeline stage |
-| Self-test | The Skillforge crate | The CLI test suite | The CLI's own release gate |
-| Validate | The output a skill produced | The skill's own steps | Run time |
+| Domain | Definition | Authority |
+|---|---|---|
+| Skillforge Framework | The Skillforge CLI, its libraries, and its Policy implementation. | Skillforge Tests |
+| Skill Repository | The canonical skill sources, tests, and repository configuration maintained by a user or team. | The User Skill Release Gate in repository continuous integration |
+| Skill Package | One freshly built, self-contained skill directory containing exactly what Skillforge will distribute or install. | Skill Package Test |
+| Installed Skill | One Skill Package copied into one Host Installation. | Installed Skill Validation and, when configured, a Host Compatibility Test |
 
-Skillforge inspects a skill. It never tests one. Inspection reads text and
-reports findings, and it executes no skill code.
+An **Agent Host** is a product or agent runtime that discovers and uses skills.
+A **Host Installation** is one configured skill location belonging to one Agent
+Host. An **Installed Skill** is the copy of a Skill Package at that location.
+These names distinguish the product, its configured location, and the files
+installed there.
+
+Use these complete names for assurance work.
+
+| Name | Exact meaning | Owner |
+|---|---|---|
+| Skillforge Check | Read a skill and report Agent Skills specification and Skillforge Policy findings without executing skill code. | `skillforge check` |
+| Skillforge Build | Produce a fresh Skill Package from the allowlisted closure of canonical source. | `skillforge build` |
+| Skill Package Test | Execute the tests owned by a skill against its freshly built Skill Package. | The Skill Repository's selected test runner |
+| Skillforge Tests | Execute the tests of the Skillforge Framework, including Policy conformance fixtures. | The Skillforge Framework's test runner |
+| Installed Skill Validation | Build the expected Skill Package and prove that its files equal the corresponding Installed Skill. | `skillforge project --check` |
+| Host Compatibility Test | Install a Skill Package into a scratch Host Installation and ask that Agent Host whether it discovers and enables the skill. | One host-specific continuous integration job |
+| Skill Package Review | Apply human or agent judgment to the authored skill and emit findings that deterministic checks cannot decide. | A human reviewer or `sf-review` |
+
+A portable Skill Package can pass Skillforge Check and still fail a Host
+Compatibility Test. The Agent Skills specification does not define every
+host-specific manifest field, discovery rule, parser behavior, or supported
+extension. The test answers only whether that version of that Agent Host can
+discover and enable the package. It does not test the skill's behavior, and it
+is optional because the host CLI may be unavailable.
+
+Three complete names describe release decisions rather than checks:
+
+- The **User Skill Release Gate** is the continuous integration decision that
+  all required checks for one Skill Repository revision passed.
+- A **User Skill Release** publishes or otherwise distributes the Skill
+  Packages built from that approved revision.
+- The **Skillforge Framework Release Gate** is the continuous integration
+  decision that the Skillforge Framework, including Skillforge Tests, is ready
+  for a Skillforge Framework Release.
+
+**Skill Runtime Validation** belongs to a real use of a skill. It is an optional
+step in that skill's workflow, owned by the skill and performed only when the
+skill runs. It is not part of either release gate, and Skillforge does not run
+it on the user's behalf.
+
+Release assurance is the umbrella for the evidence produced before release. It
+is not another operation. Never use unqualified "verification," "test,"
+"validation," "review," "gate," or "release" where one of the complete names
+above identifies the subject.
+
+Skillforge Check reads a skill and executes no skill code. A Skill Package Test
+belong to the Skill Repository, and Skillforge Tests belong to the Skillforge
+Framework.
 
 The CLI carries no verb that runs a skill's tests. Three rules already settle
 it. A skill's assertions encode that skill's subject, and the CLI boundary above
@@ -409,14 +456,14 @@ skill and prefers a standard ecosystem runner over a Skillforge-specific one.
 The promotion path above runs one way, and a verb invented in core proves
 nothing.
 
-The validation layers below carry the last reason. Skillforge decides a claim a
-skill makes about itself and never one it makes about the world. A skill's tests
-exist to assert exactly what Skillforge cannot know, so a `skillforge test` verb
+The finding classes below carry the last reason. Skillforge decides a claim a
+skill makes about itself and never one it makes about the world. Skill Package
+Tests assert exactly what Skillforge cannot know, so a `skillforge test` verb
 would put the tool's name on a result it cannot read.
 
-A continuous integration job still runs a skill's tests. A job is not a verb.
-The `skill-tests` stage in `03-skill-authoring-standard.md` section 16 calls the
-skill's own runner and reports its exit code.
+A continuous integration job still runs the Skill Package Test. The
+`skill-package-test` stage in `03-skill-authoring-standard.md` section 16 calls
+the Skill Repository's selected runner and records its exit code.
 
 ### Promotion path
 
@@ -434,16 +481,16 @@ possibly core
 Never the reverse. Starting in core recreates the monolith the boundary exists
 to prevent.
 
-## Validation layers
+## Skillforge finding and compatibility classes
 
-Skillforge reports three classes of finding, and keeps them separate.
-Conflating them makes the output less actionable.
+Skillforge keeps three classes separate. Conflating them makes the output less
+actionable and hides which system supplied the evidence.
 
 | Class | Question | Where it runs |
 |---|---|---|
-| Spec | Does the skill satisfy the Agent Skills specification? | `skillforge check` |
-| Policy | Does the skill satisfy the Skillforge house profile? | `skillforge check` |
-| Load | Does the target host accept the materialized skill? | Opt-in flag |
+| Agent Skills Specification | Does the skill satisfy the portable Agent Skills specification? | Skillforge Check |
+| Skillforge Policy | Does the skill satisfy the Skillforge house profile? | Skillforge Check |
+| Host Compatibility | Does one Agent Host discover and enable the Skill Package? | An optional Host Compatibility Test for that host |
 
 The Policy class covers three subjects, and all three are house profile. The
 first is shape: density, language, structure, and context budget. The second is
@@ -466,8 +513,8 @@ passing check means the author followed the house profile and nothing more.
 
 ### Repository safeguards
 
-Projection equality does not prove that its source is valid. The user skill
-repository enforces that boundary separately.
+Installed Skill equality does not prove that its source is valid. The Skill
+Repository enforces that boundary separately.
 
 `skillforge new` and `sf-create` finish by running `skillforge check --strict`
 on what they produced. `skillforge build` and `skillforge project` run the same
@@ -486,7 +533,7 @@ apart. Every machine-verifiable rule in the standard has conformance fixtures
 that name the rule and contain one accepted and one rejected case. The CLI test
 suite asserts the expected Policy finding for those fixtures. A change to the
 standard, its implementation, or its fixtures is incomplete until all three
-agree, and the Skillforge release gate runs that suite.
+agree, and the Skillforge Framework Release Gate runs that suite.
 
 These safeguards establish six independent boundaries.
 
@@ -494,9 +541,9 @@ These safeguards establish six independent boundaries.
 |---|---|
 | Authoring standard to repository | `skillforge check --strict` in creation, maintenance, and continuous integration. |
 | A skill's prose to its own package | The claim checks in `skillforge check`, and the skill's own tests for an external literal. `03-skill-authoring-standard.md` section 12. |
-| Repository to materialized tree | A fresh deterministic build of the allowlisted package closure. |
-| A skill's scripts to their vendored copy | The skill's own tests, run against the materialized tree by the `skill-tests` stage. |
-| Materialized tree to host | `skillforge project --check` as a no-write projection. |
+| Skill Repository to Skill Package | Skillforge Build creates a fresh package from the allowlisted closure. |
+| A skill's scripts to their packaged copy | The Skill Package Test runs against the freshly built package. |
+| Skill Package to Installed Skill | Installed Skill Validation runs `skillforge project --check` without writing. |
 | Authoring standard to Policy implementation | Rule-named conformance fixtures in the CLI test suite. |
 
 Schema validity is never evidence of behavioral quality. The CLI must not report
@@ -504,10 +551,10 @@ a skill as ready because its frontmatter parses. No class of finding answers
 whether the skill improves the task. That answer comes from using the skill, and
 `03-skill-authoring-standard.md` section 13 states how to read it.
 
-### The load class
+### Host Compatibility Tests
 
-Three propositions can hold at once, and Spec and Policy together cover only the
-first two.
+Three propositions can hold at once, and Agent Skills Specification and
+Skillforge Policy together cover only the first two.
 
 1. The file is valid YAML.
 2. The file satisfies the Agent Skills specification.
@@ -517,19 +564,19 @@ A duplicate hooks declaration is the example. Each declaration is well formed,
 the manifest parses, a validator reports success, and the host then refuses the
 skill.
 
-The load class asks the host. It installs the materialized skill into a scratch
-configuration directory, runs the host's own list command, and asserts the
-host's own report. It is deterministic, it needs no grading, and it takes one
+The Host Compatibility Test asks the Agent Host. It installs the Skill Package
+into a scratch Host Installation, runs the host's own list command, and asserts
+the host's own report. It is deterministic, needs no grading, and takes one
 command.
 
-The class runs one check per host, never one universal check. Each host has its
-own install path, its own list command, and its own report format, so a target
+Compatibility runs once per Agent Host, never as one universal test. Each host
+has its own Host Installation path, list command, and report format, so a target
 host is added by adding a job rather than by extending a shared one.
 
-Two limits keep it opt-in. It needs the target host CLI present on the machine,
-and it writes to a scratch configuration directory. It never runs inside a
-default `skillforge check`. It belongs on a flag to `skillforge build` or
-`skillforge project`, and in continuous integration.
+Two limits keep it opt-in. It needs the target Agent Host CLI present on the
+machine, and it writes to a scratch Host Installation. It never runs inside
+Skillforge Check. It belongs on a flag to `skillforge build` or `skillforge
+project`, and in continuous integration.
 
 ## The deterministic surface
 

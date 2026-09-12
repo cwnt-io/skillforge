@@ -25,7 +25,7 @@ consumers derive from it, and neither one is a second source.
 A user reaches the standard through both consumers. `skillforge check` reports a
 violation in the user's own repository. `sf-create` reads the vendored copy on
 the user's host, where no CLI is present. The self-containment rule in
-`02-architecture.md` requires that vendored copy, because a materialized skill
+`02-architecture.md` requires that vendored copy, because a Skill Package
 MUST NOT read a file outside its own directory at run time.
 
 ### The drift rule
@@ -33,7 +33,7 @@ MUST NOT read a file outside its own directory at run time.
 Add a rule to this document first. A derived consumer never introduces a rule
 this document does not state, and never relaxes one it does.
 
-A rule that a program can verify belongs in `skillforge check` as well. A rule
+A rule that a program can inspect belongs in `skillforge check` as well. A rule
 that needs judgment, such as one behavioral requirement per sentence, reaches
 the author only through the vendored text. The split is about enforceability,
 not about authority.
@@ -75,7 +75,7 @@ Disclosure, Executable Determinism, and Minimization.
 | 4. Author | What is the minimum control plane? | `SKILL.md` |
 | 5. Harden | What can become deterministic? | Scripts and validators |
 | 6. Prune | What can be deleted? | Lean final skill |
-| 7. Release | Is it reproducible and portable? | Versioned artifact |
+| 7. User Skill Release | Is it reproducible and portable? | Versioned Skill Package |
 
 ## 3. Phase 0: decide whether a skill must exist
 
@@ -352,7 +352,7 @@ description: <what it provides>. Use when <concrete user intents>.
 ```
 
 No skill needs every section. A simple skill can carry a workflow and a
-verification step and nothing else. Do not add a section because the template
+validation step and nothing else. Do not add a section because the template
 contains it.
 
 ### The skill's rules prevail
@@ -554,9 +554,9 @@ specification error.
 | Upstream recommendation | Catalog metadata about 50 to 100 tokens. `SKILL.md` under 5,000 tokens and under 500 lines. | Warning |
 | Skillforge house target | The table below. | Advisory, and a failure under the strict profile |
 
-`skillforge validate` reports specification errors only. `skillforge check`
-reports house-policy warnings. `skillforge check --strict` turns those warnings
-into a non-zero exit, which is the form continuous integration uses.
+`skillforge check` reports specification errors and house-policy warnings.
+`skillforge check --strict` turns those warnings into a non-zero exit, which is
+the form continuous integration uses.
 
 House targets:
 
@@ -595,18 +595,18 @@ complex unusual reasoning  → example
 Do not add an example to make a skill look complete. If an example serves one
 uncommon branch, move it to `references/examples.md` and state when to load it.
 
-## 12. Inspection and validation
+## 12. Skillforge Check and Skill Runtime Validation
 
-Two acts apply to a skill, on two different clocks, and they carry two different
-verbs. The workflow validates its own result at run time. The repository
-inspects the skill's own text at commit time.
+Two acts apply to a skill on two different clocks. Skill Runtime Validation
+checks the result of actual skill use. Skillforge Check reads the skill's text
+during authoring and repository maintenance.
 
-The two verbs never cross. Validation is what a skill does to its output.
-Inspection is what `skillforge check` does to a skill's text. A third verb,
-testing, belongs to the skill's own suite and to the CLI's own suite, and the
-architecture document fixes all four.
+The two never cross. Skillforge Check executes no skill code. Skill Runtime
+Validation is owned by the skill's workflow and runs only while the skill is
+being used. The Skill Package Test and Skillforge Tests are separate again.
+`02-architecture.md` defines all four names and their subjects.
 
-### Validation inside the workflow
+### Skill Runtime Validation inside the workflow
 
 A robust workflow validates as part of its own definition.
 
@@ -632,7 +632,7 @@ report the missing prerequisite.
 
 Completion becomes externally observable.
 
-### Inspection of the skill's own text
+### Skillforge Check of the skill's own text
 
 A skill is an instruction, so a sentence in `SKILL.md` is executable material. A
 wrong path in a sentence fails the way a wrong path in code fails, and it fails
@@ -985,19 +985,19 @@ A safety finding is an error under `skillforge check` and does not wait for
 
 A pattern match is a reason to read, not a verdict. The declared-subject test
 above is the judgment a reader applies, and no pattern decides it. Everything
-this table does not cover is read by a human, which is why the release gate
+this table does not cover is read by a human, which is why the release criteria
 carries a Safety row.
 
-## 16. The release gate
+## 16. The User Skill Release Gate
 
 A skill is not production-ready because its YAML parses.
 
-| Gate | Requirement |
+| Criterion | Requirement |
 |---|---|
 | Syntax | The Agent Skills validator passes. |
 | Scope | One coherent reusable capability. |
 | Determinism | Mechanical invariants live in code where practical. |
-| Scripts | Executed and tested. |
+| Scripts | The Skill Package Test passes against the freshly built Skill Package. |
 | Context | Every major block justifies its cost. |
 | References | Conditional and directly linked. |
 | Claims | Every named file exists, the prose and `side_effects` agree, no retired string survives, and every external literal carries a test. Section 12. |
@@ -1008,28 +1008,62 @@ A skill is not production-ready because its YAML parses.
 | Safety | No prohibited instruction, and every declared subject satisfies all four conditions. Section 15. |
 | Untrusted input | Fetched or third-party content is handled as data. |
 | Portability | The core does not depend on a vendor extension. |
+| Execution evidence | Every required pipeline stage records the command and result for the revision and, where applicable, the Skill Package it evaluated. |
 
-Every row is checkable by reading the skill or by running `skillforge check`.
-No row depends on a graded run, because a gate nobody can apply blocks nothing.
+The content criteria are decidable by reading the skill, running Skillforge
+Check, or running the Skill Package Test. No row depends on a graded behavioral
+run, because a gate nobody can apply blocks nothing.
 
-The pipeline that enforces it:
+The User Skill Release Pipeline supplies the deterministic evidence:
 
 ```text
-check-strict → build-fresh → skill-tests → check-projection → release
+skillforge-check → skillforge-build → skill-package-test → installed-skill-validation → user-skill-release
 ```
 
-`check-strict` includes specification and Policy findings. `build-fresh`
-materializes the allowlisted package closure from the canonical source.
-`skill-tests` calls the skill's own test runner on the materialized tree, and
-the stage name says whose tests they are. Skillforge never owns their content
-and the CLI carries no verb that runs them. `02-architecture.md` states the
-boundary. The projection check is required for every configured host and
-succeeds only when the real projection command would make no change.
+`skillforge-check` runs Skillforge Check under the strict profile.
+`skillforge-build` runs Skillforge Build from the canonical Skill Repository.
+`skill-package-test` calls the Skill Repository's selected test runner against
+each freshly built Skill Package. Skillforge never owns those tests, and the
+CLI carries no command that runs them. `installed-skill-validation` runs for
+every configured Host Installation and succeeds only when the expected Skill
+Package equals the Installed Skill. `02-architecture.md` defines each name and
+its subject.
 
-The optional load check in `02-architecture.md` fits between
-`check-projection` and `release` when the target host CLI is present. The
-Skillforge CLI's own release gate also runs the rule-named conformance fixtures
-that keep the Policy implementation aligned with this standard.
+A `host-compatibility:<host>` stage fits between
+`installed-skill-validation` and `user-skill-release` where the Agent Host CLI
+is available. This optional Host Compatibility Test proves that the named host
+discovers and enables the Skill Package; it does not test skill behavior.
+
+The gate accepts runner-produced execution evidence, never a human or agent's
+claim that a command ran. Evidence names the exact command, its result, the
+source revision, and the Skill Package identity when the stage consumes one. It
+may remain in the continuous integration job record; Skillforge requires no
+checked-in evidence manifest before a tool consumes one.
+
+Use four result labels and no ambiguous "verified" or "skipped" state.
+
+| Result | Meaning |
+|---|---|
+| `passed` | The operation ran and satisfied its success condition. |
+| `failed` | The operation ran and did not satisfy its success condition. |
+| `not-run` | The operation did not run; the evidence records why. |
+| `not-applicable` | A declared rule makes an optional operation inapplicable. |
+
+A required stage satisfies the gate only with `passed`. A `failed` stage always
+blocks release. Only an optional stage may be `not-run` or `not-applicable`, and
+its evidence records the reason. A report by an agent or a human summarizes
+this evidence and distinguishes all four results. The report never substitutes
+for the runner record, and reading a check's code never counts as running it.
+
+Operational commands that `SKILL.md` tells an agent to run belong to actual
+skill use. The User Skill Release Pipeline does not execute them merely because
+the prose names them. The Skill Package Test may exercise deterministic helpers
+against fixtures or a sandbox. If the skill defines Skill Runtime Validation,
+its workflow performs that validation only while the skill is being used.
+
+The separate Skillforge Framework Release Gate runs Skillforge Tests, including
+the rule-named conformance fixtures that keep the Policy implementation aligned
+with this standard. A User Skill Release does not run Skillforge Tests.
 
 ## 17. Portable core, vendor adapters
 

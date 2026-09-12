@@ -122,14 +122,14 @@ Projects that implement a section of the standard rather than describe it.
   edited managed block.
 
 - [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd): one skill with
-  host adapters for nine runtimes. The load class in `02-architecture.md` comes
-  from its
+  adapters for nine Agent Hosts. The Host Compatibility Test in
+  `02-architecture.md` comes from its
   [.github/workflows/plugin-load-check.yml](https://github.com/ayghri/i-have-adhd/blob/main/.github/workflows/plugin-load-check.yml),
   which installs the plugin into a scratch configuration directory and asserts
   the host's own report.
   [pi-load-check.yml](https://github.com/ayghri/i-have-adhd/blob/main/.github/workflows/pi-load-check.yml)
-  is the same idea for a second host, which is why the load class runs one job
-  per host.
+  is the same idea for a second Agent Host, which is why compatibility runs one
+  job per host.
 
 Five more files in that repository raised the questions OQ-7 to OQ-11 in
 `08-open-questions.md`.
@@ -144,7 +144,7 @@ Five more files in that repository raised the questions OQ-7 to OQ-11 in
   reported as not run.
 - [AGENTS.md](https://github.com/ayghri/i-have-adhd/blob/main/AGENTS.md): a
   repository map for an agent, with a reading order, an entry point per runtime,
-  source-of-truth rules, and the exact verification commands.
+  source-of-truth rules, and the exact repository-check commands.
 - [tests/test_install_docs.py](https://github.com/ayghri/i-have-adhd/blob/main/tests/test_install_docs.py):
   a test that asserts a documented path is present and that an abandoned path is
   absent by name.

@@ -17,16 +17,16 @@ decision. "Evidence" names the primary source that raised the question.
 | OQ-2 | How does an evaluation run invoke an agent CLI? | Closed, not doing |
 | OQ-3 | What happens to a gate run that fails? | Closed, not doing |
 | OQ-4 | How does a suite test that a skill did not over-apply? | Closed, not doing |
-| OQ-5 | Who verifies that a host loads the projected skill? | Closed, answered |
+| OQ-5 | How is a Skill Package tested for compatibility with an Agent Host? | Closed, answered |
 | OQ-6 | Does a `SKILL.md` declare override conditions? | Closed, answered |
 | OQ-7 | What must a skill never instruct an agent to do? | Closed, answered |
 | OQ-8 | How does Skillforge prove a projection has not drifted? | Closed, answered |
 | OQ-9 | Does a skill test the claims its own documentation makes? | Closed, answered |
 | OQ-10 | Does a skill repository carry an entry document for an agent? | Closed, answered |
-| OQ-11 | Does the release gate check the claims about verification? | Open |
+| OQ-11 | What execution evidence must accompany a user skill release? | Closed, answered |
 
 OQ-10 and OQ-11 came from one source, `ayghri/i-have-adhd`.
-`06-references.md` links the files behind them. OQ-10 is closed; OQ-11 remains.
+`06-references.md` links the files behind them. Both questions are closed.
 
 ## OQ-8: How does Skillforge prove a projection has not drifted?
 
@@ -57,8 +57,8 @@ never blocks a commit, because it does not repeat.
 tests, and section 11 maps the three tiers onto the three hook stages.
 `02-architecture.md` adds claims as the third Policy subject, adds the prose-to-
 package boundary to the safeguard table, and makes `retired.toml` source only.
-The release gate gains a Claims row, and constitution rules 41 to 43 carry the
-short form.
+The User Skill Release Gate gains a Claims row, and constitution rules 41 to 43
+carry the short form.
 
 The sub-question is answered by the detection rule rather than by a judgment.
 `skillforge check` extracts the literals itself, so a skill carries a claim test
@@ -69,28 +69,13 @@ empty test file.
 
 Closed. `02-architecture.md`, under "The agent entry document," defines the root `AGENTS.md`, Skillforge's marker-delimited ownership within it, shared-tool coexistence, safe splice and replacement behavior, and removal.
 
-## OQ-11: Does the release gate check the claims about verification?
+## OQ-11: What execution evidence must accompany a user skill release?
 
-Every row of the gate in section 16 of `03-skill-authoring-standard.md` is
-checkable by reading the skill or by running `skillforge check`. No row asks
-whether the checks reported as run were run.
-
-Why it matters. The dogfooding constraint means an agent authors skills with the
-`sf-` pack and often reviews its own output. An agent that reports a passing
-check it never executed defeats every other row at once.
-
-Evidence. The "Verification" section of `CONTRIBUTING.md` in
-`ayghri/i-have-adhd`: "If a check was not run, say so and explain why; never
-invent results or treat inspection as execution." Its authorship rules add the
-matching point, that work reviewed only by the agent that produced it is not
-independently verified.
-
-Target. `03-skill-authoring-standard.md` section 16, and possibly a new
-constitution rule.
-
-Proposal. One gate row. A reported check names the exact command and its result.
-A check that did not run is reported as not run, with the reason. Reading a file
-is not running the check that reads it.
+Closed. `02-architecture.md`, under "Assurance domains and reserved names,"
+defines the subjects and names. `03-skill-authoring-standard.md`
+section 16 defines the User Skill Release Pipeline, runner-produced evidence,
+result labels, the separate Skillforge Framework Release Gate, and the boundary
+between skill-package tests and run-time operations.
 
 ## Closed: OQ-7
 
@@ -103,8 +88,8 @@ prohibited instruction classes, a declared-subject test with four conditions
 that keeps a dotfiles skill and a rotation skill legal, a rule that fetched
 content is data rather than instruction, a rule that every instruction lives in
 visible text, a write boundary, and the table of signals `skillforge check`
-matches. Constitution rules 36 to 40 carry the short form. The release gate at
-section 16 gains a Safety row and an Untrusted input row.
+matches. Constitution rules 36 to 40 carry the short form. The User Skill
+Release Gate at section 16 gains a Safety row and an Untrusted input row.
 `02-architecture.md` records that the Policy class covers safety as well as
 shape.
 
@@ -142,9 +127,10 @@ read evidence from real use, which is the part that survives.
 
 ## Closed: OQ-5
 
-Answered. `02-architecture.md` now carries the load class, which asks the host
-whether it accepts the materialized skill. It is opt-in, deterministic, and
-needs no grading.
+Answered. `02-architecture.md` defines the Host Compatibility Test. It installs
+a Skill Package into a scratch Host Installation and asks that Agent Host
+whether it discovers and enables the skill. It is opt-in, deterministic, and
+tests host compatibility rather than skill behavior.
 
 ## Closed: OQ-6
 
