@@ -122,15 +122,17 @@ Another tool may own a differently named region in the same document.
 
 `sf-setup` creates `AGENTS.md` with the block when the file is absent. When the
 file exists without the block, setup appends it. When one valid block exists,
-setup replaces it in place only when the installed baseline is unedited. Every
-byte outside the markers survives unchanged.
+setup renders the current block and previews the replacement. It changes the
+existing block only after the user confirms. Every byte outside the markers
+survives unchanged.
 
 Setup refuses rather than guessing when `AGENTS.md` is a symlink, either marker
-is missing, the markers are reversed, more than one pair exists, or the owned
-region differs from its installed baseline. It reports a local edit as a
-conflict for the user to reconcile before retrying. Removing the Skillforge
-repository integration removes only this region, and removes `AGENTS.md` only
-when no meaningful content remains.
+is missing, the markers are reversed, or more than one pair exists. Content
+inside the markers is tool-owned rather than a customization surface; setup
+warns that replacement discards edits there and tells the user to move local
+instructions outside the region. Removing the Skillforge repository integration
+removes only this region, and removes `AGENTS.md` only when no meaningful content
+remains.
 
 ## Materialization
 
@@ -317,9 +319,10 @@ Skillforge-owned block in the repository's `AGENTS.md`.
 
 Setup is a skill rather than a tenth CLI verb, because most of the work is
 judgment. The skill reads what the repository already contains, asks which hosts
-the user targets, decides what to create and what to leave alone, and stops
-before it overwrites an existing file. Principle 1 in `01-vision.md` puts that
-class of work in a skill.
+the user targets, and decides what to create and what to leave alone. It never
+replaces user-owned content. For a shared host file, it previews the change,
+updates only its named region, and asks before it writes. Principle 1 in
+`01-vision.md` puts that class of work in a skill.
 
 The mechanical parts stay in the CLI. `sf-setup` calls `skillforge new` for a
 skill directory and `skillforge doctor` for the runtime baseline. It does not

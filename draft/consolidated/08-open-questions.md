@@ -67,7 +67,7 @@ empty test file.
 
 ## OQ-10: Does a skill repository carry an entry document for an agent?
 
-Closed. `02-architecture.md`, under "The agent entry document," defines the root `AGENTS.md`, Skillforge's marker-delimited ownership within it, shared-tool coexistence, safe splice and upgrade behavior, and removal.
+Closed. `02-architecture.md`, under "The agent entry document," defines the root `AGENTS.md`, Skillforge's marker-delimited ownership within it, shared-tool coexistence, safe splice and replacement behavior, and removal.
 
 ## OQ-11: Does the release gate check the claims about verification?
 
