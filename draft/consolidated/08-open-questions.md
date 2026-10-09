@@ -31,27 +31,15 @@ OQ-10 and OQ-11 came from one source, `ayghri/i-have-adhd`.
 
 ## OQ-12: Does the character budget hold for Claude's own tokenizer?
 
-Section 11 of `03-skill-authoring-standard.md` sets its caps in characters and
-converts them at 2.5 characters per token. The measurement that ranks
-characters over words and lines ran on OpenAI tokenizers, because Claude's
-tokenizer is not public. No count has checked the ratio on Claude itself.
+Section 11 of `03-skill-authoring-standard.md` sets its caps in characters and converts them at 2.5 characters per token. The measurement that ranks characters over words and lines ran on OpenAI tokenizers, because Claude's tokenizer is not public. No count has checked the ratio on Claude itself.
 
-Why it matters. The 12,000-character cap exists to keep a body under the 5,000
-tokens that Claude Code re-attaches after compaction. If Claude's tokenizer
-spends fewer than 2.5 characters per token on skill text, a body under the cap
-can still lose its tail.
+Why it matters. The 12,000-character cap exists to keep a body under the 5,000 tokens that Claude Code re-attaches after compaction. If Claude's tokenizer spends fewer than 2.5 characters per token on skill text, a body under the cap can still lose its tail.
 
-Evidence. The Claude models overview states "1M tokens is roughly 555k words or
-2.5M Unicode characters". The token counting page states that the new tokenizer
-"produces approximately 30 percent more tokens for the same text", and that
-token counting is free. `06-references.md` links both.
+Evidence. The Claude models overview states "1M tokens is roughly 555k words or 2.5M Unicode characters". The token counting page states that the new tokenizer "produces approximately 30 percent more tokens for the same text", and that token counting is free. `06-references.md` links both.
 
 Target. `03-skill-authoring-standard.md` section 11.
 
-Proposal. Once the first skills exist, count each `SKILL.md` body and each
-reference file with the token counting endpoint, and compare the result with
-the character count divided by 2.5. Keep the caps while every file stays under
-its token budget. Lower the ratio only if a file crosses it.
+Proposal. Once the first skills exist, count each `SKILL.md` body and each reference file with the token counting endpoint, and compare the result with the character count divided by 2.5. Keep the caps while every file stays under its token budget. Lower the ratio only if a file crosses it.
 
 ## OQ-8: How does Skillforge prove a projection has not drifted?
 

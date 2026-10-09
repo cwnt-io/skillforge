@@ -476,15 +476,12 @@ Validate the generated files before continuing.
 
 ### Normative vocabulary
 
-Reserve `MUST` and `MUST NOT` for safety, data integrity, scope preservation,
-irreversible operations, protocol contracts, and machine-verifiable invariants.
+Write no `MUST` or `MUST NOT` in a skill file. In skill text a capitalized keyword is emphasis, and current models over-trigger on it. Write an invariant as a plain imperative, and turn a rule that must hold on every run into a check. This standard keeps `MUST` and `MUST NOT` in its own normative statements, because those bind authors and the checker, not an agent reading a skill.
+
 Use plain imperatives for ordinary procedure. Use `Default to X` for policy. Use
 `Prefer X when Y` for a heuristic.
 
-Louder words do not create robustness. For a non-obvious constraint, give the
-reason in one clause, and only where the reason changes what the agent does at
-an edge case. A model generalizes from a reason, and a reason that changes
-nothing costs context for no behavior.
+Louder words do not create robustness. For a non-obvious constraint, give the reason in one clause, and only where the reason changes what the agent does at an edge case. A model generalizes from a reason, and a reason that changes nothing costs context for no behavior.
 
 ```text
 Do not regenerate the lockfile during validation.
@@ -496,8 +493,7 @@ generalize.
 
 ### One action per step
 
-Write each step as one action the reader can check was done. A step that holds
-two actions hides the second one from a reader who stops at the first verb.
+Write each step as one action the reader can check was done. A step that holds two actions hides the second one from a reader who stops at the first verb.
 
 Bad:
 
@@ -512,27 +508,15 @@ Better:
 2. Run `git cliff --unreleased` and compare its entries with the merged changes.
 ```
 
-Use a numbered list where order matters, a bulleted list for unordered rules,
-and a table for a closed choice.
+Use a numbered list where order matters, a bulleted list for unordered rules, and a table for a closed choice.
 
 ### No capitals for emphasis
 
-Never write a word in capitals to stress it. `ALWAYS`, `NEVER`, `IMPORTANT`,
-`CRITICAL`, `NOTE`, `WARNING`, and any other word in capitals used for weight
-are out. Current models over-trigger on aggressive wording, so a capitalized
-rule fires where it does not apply. When many lines are emphasized, none stands
-out.
+Never write a word in capitals in a skill file to stress it. The words `ALWAYS`, `NEVER`, `MUST`, `SHOULD`, `IMPORTANT`, `CRITICAL`, `NOTE`, `WARNING`, `NOT`, and `ONLY` are out, and so is any other word in capitals used for weight. Current models over-trigger on aggressive wording, so a capitalized rule fires where it does not apply. When many lines are emphasized, none stands out.
 
-`MUST` and `MUST NOT` are not emphasis. They are the two reserved keywords that
-"Normative vocabulary" limits to the categories it lists, and they stay. An
-acronym such as `JSON` or `PATH` is a name, not emphasis.
+A rule that must hold on every run does not become louder. It becomes a `skillforge check` rule or a script, because only a check holds on every run.
 
-A rule that must hold on every run does not become louder. It becomes a
-`skillforge check` rule or a script, because only a check holds on every run.
-
-`skillforge check` reports a word in capitals as a house-policy warning. It
-skips code spans, fenced blocks, `MUST`, `MUST NOT`, and a fixed list of
-acronyms, so the reserved keywords never trip it.
+`skillforge check` reports each of those words in a skill file as a house-policy warning. It skips code spans, fenced blocks, and acronyms such as `JSON` and `PATH`, which are names rather than emphasis.
 
 ### Condition-first syntax
 
@@ -569,8 +553,7 @@ Use `rg` for repository text search.
 If `rg` is unavailable, use `grep -R`.
 ```
 
-The pattern is one default plus one explicit exception, never a menu of equal
-options. A menu hands the choice back to the agent, which then picks by guess.
+The pattern is one default plus one explicit exception, never a menu of equal options. A menu hands the choice back to the agent, which then picks by guess.
 
 ## 10. Progressive disclosure
 
@@ -606,9 +589,7 @@ the form continuous integration uses.
 
 ### The character budget
 
-Skillforge measures size in characters, never in lines and never in words. A
-count is the number of Unicode characters. The body of `SKILL.md` is every
-character after the closing line of its frontmatter.
+Skillforge measures size in characters, never in lines and never in words. A count is the number of Unicode characters. The body of `SKILL.md` is every character after the closing line of its frontmatter.
 
 | Component | House target |
 |---|---|
@@ -620,38 +601,21 @@ character after the closing line of its frontmatter.
 | Reference depth | 1 |
 | Generic explanatory prose | approximately zero |
 
-The 8,000-character target is what a rewrite aims for. Only the 12,000 and
-32,000 caps fail `skillforge check --strict`.
+The 8,000-character target is what a rewrite aims for. Only the 12,000 and 32,000 caps fail `skillforge check --strict`.
 
 Each figure has a reason.
 
-- 12,000 characters is about 4,800 tokens at 2.5 characters per token. That
-  ratio is the conservative one Anthropic states for its current tokenizer.
-  The result sits under two loader budgets: the Agent Skills specification
-  recommends a body under 5,000 tokens, and Claude Code re-attaches only the
-  first 5,000 tokens of each skill after compaction.
-- 32,000 characters follows the 32 KiB limit Codex applies to instruction files.
-  No primary source caps an individual reference file beyond "focused".
-- A long reference file opens with its sections because an agent can preview
-  only its head. The vendor thresholds for a table of contents are 100 lines
-  and 300 lines. 8,000 characters is the stricter end for unwrapped prose.
+- 12,000 characters is about 4,800 tokens at 2.5 characters per token. That ratio is the conservative one Anthropic states for its current tokenizer. The result sits under two loader budgets: the Agent Skills specification recommends a body under 5,000 tokens, and Claude Code re-attaches only the first 5,000 tokens of each skill after compaction.
+- 32,000 characters follows the 32 KiB limit Codex applies to instruction files. No primary source caps an individual reference file beyond "focused".
+- A long reference file opens with its sections because an agent can preview only its head. The vendor thresholds for a table of contents are 100 lines and 300 lines. 8,000 characters is the stricter end for unwrapped prose.
 
 ### Why characters
 
-The upstream recommendations use three units: 500 lines, 5,000 tokens, and
-5,000 words. The three disagree, and a line count disagrees most for prose that
-keeps one paragraph on one line. Tokens are the unit that costs context, but no
-tokenizer is shared between hosts, so Skillforge needs a proxy it can count
-offline.
+The upstream recommendations use three units: 500 lines, 5,000 tokens, and 5,000 words. The three disagree, and a line count disagrees most for prose that keeps one paragraph on one line. Tokens are the unit that costs context, but no tokenizer is shared between hosts, so Skillforge needs a proxy it can count offline.
 
-A measurement on 2026-10-08 compared the three proxies. The `tiktoken`
-tokenizers `o200k_base` and `cl100k_base` ran over two corpora. One pooled ratio
-per proxy predicted each file's token count, and the error is the per-file
-error of that prediction. Claude's tokenizer is not public, so the figures come
-from OpenAI tokenizers.
+A measurement on 2026-10-08 compared the three proxies. The `tiktoken` tokenizers `o200k_base` and `cl100k_base` ran over two corpora. One pooled ratio per proxy predicted each file's token count, and the error is the per-file error of that prediction. Claude's tokenizer is not public, so the figures come from OpenAI tokenizers.
 
-- Corpus 1: 145 Markdown files of unwrapped prose from one documentation
-  repository.
+- Corpus 1: 145 Markdown files of unwrapped prose from one documentation repository.
 - Corpus 2: 90 skill files from the skill collections installed on one host.
 
 | Corpus | Proxy | Correlation with tokens | Median error | 90th-percentile error | Worst error |
@@ -663,28 +627,20 @@ from OpenAI tokenizers.
 | | Words | 0.971 | 12% | 21% | 27% |
 | | Lines | 0.71 | 27% | 70% | 118% |
 
-Tokens per line ranged from 6.5 to 34, so a 500-line cap allows anything from
-about 3,000 to about 17,000 tokens. The Markdown averaged about 4.4 characters
-per token on these tokenizers. With the 30 percent increase Anthropic states
-for its new tokenizer, that is about 3.4 characters per token, so 2.5 is the
-conservative bound.
+Tokens per line ranged from 6.5 to 34, so a 500-line cap allows anything from about 3,000 to about 17,000 tokens. The Markdown averaged about 4.4 characters per token on these tokenizers. With the 30 percent increase Anthropic states for its new tokenizer, that is about 3.4 characters per token, so 2.5 is the conservative bound.
 
 A line count is a cheap signal and not a semantic measure. Report it, and never
 report it as a specification error.
 
 ### Why the budget is small
 
-The loaders impose small budgets, and a larger window does not remove the
-reason for them.
+The loaders impose small budgets, and a larger window does not remove the reason for them.
 
-- Accuracy falls as input grows, even when every relevant fact is retrieved.
-  A single distractor already lowers performance.
+- Accuracy falls as input grows, even when every relevant fact is retrieved. A single distractor already lowers performance.
 - Compliance falls as the rule count rises, and models favor earlier rules.
 - Focused skills of at most three modules outperform exhaustive bundles.
 
-Lean does not mean short. Lean means behavior improvement divided by context
-cost. A 6,000-character skill that prevents a recurring catastrophic failure is
-lean. A 600-character skill of generic advice is bloated.
+Lean does not mean short. Lean means behavior improvement divided by context cost. A 6,000-character skill that prevents a recurring catastrophic failure is lean. A 600-character skill of generic advice is bloated.
 
 The cheapest character is the one an author proves is unnecessary.
 
@@ -695,11 +651,10 @@ The cheapest character is the one an author proves is unnecessary.
 | Size unit | 500 lines (Agent Skills specification, Claude docs). 5,000 tokens (specification, Claude overview). 5,000 words (Anthropic guide, OpenAI skill-creator). | Characters, because the measurement ranks them first and the three units disagree for unwrapped prose. |
 | Table of contents threshold | 100 lines (Claude best practices, OpenAI skill-creator). 300 lines (Anthropic skill-creator). | 8,000 characters, the stricter end for unwrapped prose. |
 | Reasons in rules | Explain the why (Agent Skills, Anthropic skill-creator, Claude prompting). State what to do, not how or why (Claude Code skills). | A reason of one clause, only where it changes behavior. Section 9. |
-| Emphasis | "MUST filter" over "always filter" (Claude best practices). Dial back aggressive wording (Claude prompting, Anthropic skill-creator). | The two reserved keywords `MUST` and `MUST NOT`, for the categories section 9 lists, and no other capitals. A rule that must hold on every run becomes a `skillforge check` rule or a script. |
+| Emphasis | "MUST filter" over "always filter" (Claude best practices). Dial back aggressive wording (Claude prompting, Anthropic skill-creator). | No capitals in skill text, `MUST` included. A rule that must hold on every run becomes a `skillforge check` rule or a script. |
 | Description voice | Third person (Claude). Imperative "Use this skill when" (Agent Skills). | "What it does. Use when ...", which satisfies both. Section 8. |
 
-`06-references.md` holds every source behind this section, with the date it was
-read.
+`06-references.md` holds every source behind this section, with the date it was read.
 
 ### Examples
 
@@ -1208,8 +1163,7 @@ portable across all of them.
 
 ## 18. The constitution
 
-These 45 rules bind every skill built with Skillforge, the `sf-` meta-skill pack
-included. No skill is exempt because Skillforge ships it.
+These 45 rules bind every skill built with Skillforge, the `sf-` meta-skill pack included. No skill is exempt because Skillforge ships it.
 
 1. Use the Agent Skills `SKILL.md` specification as the portable format.
 2. Create a skill only for reusable behavior the base agent does not already perform reliably.
@@ -1223,7 +1177,7 @@ included. No skill is exempt because Skillforge ships it.
 10. Put conditions before actions.
 11. Use one canonical term for each concept.
 12. Give one default rather than several equal choices.
-13. Reserve `MUST` and `MUST NOT` for genuine invariants.
+13. Keep `MUST` and `MUST NOT` in this standard's own normative statements, never in skill text.
 14. Explain a non-obvious constraint in one clause, only where the reason changes what the agent does.
 15. Represent closed branching logic as decision tables when practical.
 16. Move deterministic, fragile, repeated, or machine-verifiable behavior into scripts.
@@ -1255,7 +1209,7 @@ included. No skill is exempt because Skillforge ships it.
 42. Keep the prose and `side_effects` in agreement about every path the skill writes.
 43. Assert every external path and external command the skill states, and keep asserting the absence of every one the skill retired.
 44. Write one action per step, concrete enough to check.
-45. Use no capitals for emphasis, and make a rule that must hold on every run a check or a script.
+45. Use no capitals for emphasis in a skill file, and make a rule that must hold on every run a check or a script.
 
 ## 19. Reference registry
 
