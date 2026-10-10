@@ -20,7 +20,7 @@ consumers derive from it, and neither one is a second source.
 | Consumer | Carries | Derivation |
 |---|---|---|
 | `skillforge check` | The machine-verifiable rules, reported as Policy findings. | Implemented in the CLI against this text. |
-| The `sf-` meta-skills | The full text, as a `references/` entry. | Vendored at build time, the way `02-architecture.md` vendors shared code. |
+| The `sf-` meta-skills | The full text, split at its top-level sections into `references/` entries, each within the 32,000-character cap and linked directly from `SKILL.md`. | Vendored at build time, the way `02-architecture.md` vendors shared code. |
 
 A user reaches the standard through both consumers. `skillforge check` reports a
 violation in the user's own repository. `sf-create` reads the vendored copy on
@@ -476,7 +476,7 @@ Validate the generated files before continuing.
 
 ### Normative vocabulary
 
-Write no `MUST` or `MUST NOT` in a skill file. In skill text a capitalized keyword is emphasis, and current models over-trigger on it. Write an invariant as a plain imperative, and turn a rule that must hold on every run into a check. This standard keeps `MUST` and `MUST NOT` in its own normative statements, because those bind authors and the checker, not an agent reading a skill.
+Write no `MUST` or `MUST NOT` in a skill file. In skill text a capitalized keyword is emphasis, and Claude Opus 4.5 and 4.6 over-trigger on aggressive wording written for earlier models. Write an invariant as a plain imperative, and turn a rule that must hold on every run into a check. This standard keeps `MUST` and `MUST NOT` in its own normative statements, because those bind authors and the checker, not an agent reading a skill.
 
 Use plain imperatives for ordinary procedure. Use `Default to X` for policy. Use
 `Prefer X when Y` for a heuristic.
@@ -512,11 +512,11 @@ Use a numbered list where order matters, a bulleted list for unordered rules, an
 
 ### No capitals for emphasis
 
-Never write a word in capitals in a skill file to stress it. The words `ALWAYS`, `NEVER`, `MUST`, `SHOULD`, `IMPORTANT`, `CRITICAL`, `NOTE`, `WARNING`, `NOT`, and `ONLY` are out, and so is any other word in capitals used for weight. Current models over-trigger on aggressive wording, so a capitalized rule fires where it does not apply. When many lines are emphasized, none stands out.
+Never write a word in capitals in a skill file to stress it. The words `ALWAYS`, `NEVER`, `MUST`, `SHOULD`, `IMPORTANT`, `CRITICAL`, `NOTE`, `WARNING`, `NOT`, and `ONLY` are out, and so is any other word in capitals used for weight. Claude Opus 4.5 and 4.6 over-trigger on aggressive wording written for earlier models, so a capitalized rule fires where it does not apply. When many lines are emphasized, none stands out.
 
 A rule that must hold on every run does not become louder. It becomes a `skillforge check` rule or a script, because only a check holds on every run.
 
-`skillforge check` reports each of those words in a skill file as a house-policy warning. It skips code spans, fenced blocks, and acronyms such as `JSON` and `PATH`, which are names rather than emphasis.
+`skillforge check` reports any word in capitals in a skill file as a house-policy warning, and the words above are examples, not the whole list. It skips the frontmatter, code spans, fenced blocks, and link targets. It accepts a fixed list of acronyms, which are names rather than emphasis: `API`, `CI`, `CLI`, `HTTP`, `HTTPS`, `ID`, `JSON`, `OIDC`, `PATH`, `SSH`, `TOML`, `URL`, `UTF`, `YAML`, and `EARS`.
 
 ### Condition-first syntax
 
