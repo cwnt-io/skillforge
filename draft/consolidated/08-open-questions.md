@@ -25,6 +25,7 @@ decision. "Evidence" names the primary source that raised the question.
 | OQ-10 | Does a skill repository carry an entry document for an agent? | Closed, answered |
 | OQ-11 | What execution evidence must accompany a user skill release? | Closed, answered |
 | OQ-12 | Does the character budget hold for Claude's own tokenizer? | Open |
+| OQ-13 | What hook configuration and CI does the repository carry? | Open |
 
 OQ-10 and OQ-11 came from one source, `ayghri/i-have-adhd`.
 `06-references.md` links the files behind them. Both questions are closed.
@@ -40,6 +41,18 @@ Evidence. The Claude models overview states "1M tokens is roughly 555k words or 
 Target. `03-skill-authoring-standard.md` section 11.
 
 Proposal. Once the first skills exist, count each `SKILL.md` body and each reference file with the token counting endpoint, and compare the result with the character count divided by 2.5. Keep the caps while every file stays under its token budget. Lower the ratio only if a file crosses it.
+
+## OQ-13: What hook configuration and CI does the repository carry?
+
+The repository has a devshell with the Rust toolchain, and no `.pre-commit-config.yaml` and no CI yet. Section 11 of `04-script-runtime-profile.md` names the hooks of each stage, and section 1 names the owner of each development tool, but nothing runs them.
+
+Why it matters. Until the hook configuration lands, no commit runs a check, and no rule of section 11 holds.
+
+Evidence. The repository tree: `Cargo.toml`, `src/`, `draft/`, `flake.nix`, and no hook or CI file.
+
+Target. `04-script-runtime-profile.md` sections 1 and 11.
+
+Proposal. Land `.pre-commit-config.yaml` with the stages of section 11. ruff and shellcheck use their upstream hooks. cargo fmt and cargo clippy keep `language: system` with an `# owner:` comment. The configuration also carries the pygrep hook `no-language-library-in-flake`, which fails on a language library in `flake.nix`. CI runs the same stages through the devshell, so that a push that passed the local hooks passes CI.
 
 ## OQ-8: How does Skillforge prove a projection has not drifted?
 

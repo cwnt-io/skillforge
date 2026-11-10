@@ -20,11 +20,19 @@ uv
 A missing baseline command is a hard failure. Skillforge supports no degraded
 execution path. `skillforge doctor` reports the missing command and stops.
 
-Development of the Skillforge repository itself additionally requires:
+Development of the Skillforge repository itself additionally requires the
+tools below. Each tool has one owner, the most specific file that declares that
+kind of tool natively.
 
-```text
-pytest  bats  cargo-nextest  shellcheck  ruff  pre-commit
-```
+| Tool | Owner |
+|---|---|
+| pytest | the `dev` group of `pyproject.toml`, locked in `uv.lock` |
+| shellcheck, ruff | `.pre-commit-config.yaml`, as hooks that pre-commit manages |
+| bats, cargo-nextest, pre-commit | the devshell of `flake.nix` |
+
+The devshell also holds the Rust toolchain, which `rust-toolchain.toml` pins.
+The baseline above is not part of this table. A distributed skill needs it on
+the host of its user, and the repository does not own it.
 
 ## 2. Language policy
 
@@ -794,6 +802,12 @@ degrades, and the hooks get bypassed.
 | pre-commit | Fast static checks: whitespace, EOF, YAML and TOML parsing, large files, ruff, shellcheck, cargo fmt, cargo clippy. `skillforge check --strict`, which carries the claim checks. |
 | pre-push | Relevant tests for the changed area, the claim tests included. |
 | CI | The complete suite, and the `sf-review` agent pass. |
+
+ruff and shellcheck run from their upstream hooks, `astral-sh/ruff-pre-commit`
+and `shellcheck-py/shellcheck-py`, so pre-commit builds their environments and
+the devshell does not carry them. cargo fmt and cargo clippy run in the
+environment of the project, from the toolchain of the devshell, so each keeps
+a `language: system` hook with an `# owner:` comment that names that reason.
 
 A deterministic check blocks a commit. The agent pass never blocks one, because
 it does not repeat. `03-skill-authoring-standard.md` section 12 states the
