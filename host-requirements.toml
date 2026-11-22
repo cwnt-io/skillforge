@@ -1,9 +1,9 @@
 schema = 1
 
-# The oldest release that carries `store-guard --daily` with the warning
-# about a build folder over 10 GB, which .envrc runs.
+# The oldest release that carries `exobrain outdated`, which .envrc
+# runs. It also carries `store-guard --daily`.
 [tools.exobrain]
-version = ">=1.2.0"
+version = ">=2.0.0"
 
 # The compile cache that .envrc sets as RUSTC_WRAPPER. The host
 # configuration owns its one version, so the file names no version.
